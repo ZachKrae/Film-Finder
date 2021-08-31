@@ -11,10 +11,10 @@ import re
 with open('Row House Cinema.html') as html_file:
     soup = BeautifulSoup(html_file, 'lxml')
 
-film_data = open('film-data.csv', 'w')
-
+film_data = open('film-data.csv', 'w', newline='')
+    
 csv_writer = csv.writer(film_data)
-csv_writer.writerow(['title', 'summary', 'showtime', 'date', 'location', 'buy_ticket_link'])
+csv_writer.writerow(['title', 'showtime', 'location', 'buy_ticket_link'])
 
 for showing in soup.find_all('div', class_='show-details'):
     title = showing.h2.text
@@ -35,6 +35,6 @@ for showing in soup.find_all('div', class_='show-details'):
     print(buy_ticket_link)
     print()
 
-    csv_writer.writerow([title, summary, showtime, date, location, buy_ticket_link])
+    csv_writer.writerow([title, showtime, location, buy_ticket_link])
 
 film_data.close()
