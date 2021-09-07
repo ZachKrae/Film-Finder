@@ -35,6 +35,7 @@ for showing in soup.find_all('div', class_='show-details'):
     buy_ticket = showing.find(class_='showtime')
     buy_ticket_link = buy_ticket.get('href')
 
+    # insert data from Row House into database
     c.execute('''INSERT INTO film_showings VALUES(?,?,?,?,?,?)''', (title, more_editted_showtime, editted_date, location, buy_ticket_link, summary))
     conn.commit()
 
@@ -46,15 +47,15 @@ for showing in soup2.find_all(class_="showtimes-details"):
     raw_date = showing.find(class_='location_date')
     new_date = showing.parent.attrs['id']
     date = re.sub('2021-09-', 'Sep ', new_date)
-    # date = raw_date.attrs['id']
     location = "Hollwood Theater"
     buy_ticket = showing.find(class_='showtime')
     buy_ticket_link = buy_ticket.get('href')
     summary = showing.find(class_='synopsis').text
 
+    # insert data from Hollywood Theater into database
     c.execute('''INSERT INTO film_showings VALUES(?,?,?,?,?,?)''', (title, showtime, date, location, buy_ticket_link, summary))
     conn.commit()
 
-c.execute('''SELECT * FROM film_showings''')
-results = c.fetchall()
-print(results)
+# c.execute('''SELECT * FROM film_showings''')
+# results = c.fetchall()
+# print(results)
