@@ -1,17 +1,24 @@
 from bs4 import BeautifulSoup
 import requests
 import re
-import sqlite3
+import mysql.connector
 
-# create connection
-conn = sqlite3.connect('filmscrape.db')
-c = conn.cursor()
+# create connection to MySQL DB
+db = mysql.connector.connect(
+    host="localhost",
+    # credentials
+    user="",
+    passwd="",
+    database="filmscrapedb"
+    )
 
-# drop previous table
-c.execute('''DROP TABLE film_showings''')
+mycursor = db.cursor()
 
-# create table
-c.execute('''CREATE TABLE film_showings(title TEXT, showtime TEXT, date TEXT, location TEXT, buy_ticket_link TEXT, summary TEXT)''')
+# drop previous MySQL table
+mycursor.execute("DROP TABLE FilmShowings")
+
+# create MySQL table
+mycursor.execute("CREATE TABLE FilmShowings (title VARCHAR(50), showtime VARCHAR(20), date VARCHAR(20), location VARCHAR(25), buy_ticket_link VARCHAR(100), summary VARCHAR(500))")
 
 # scrape data from Row House Cinema website
 source = requests.get('https://rowhousecinema.com/').text
@@ -36,8 +43,8 @@ for showing in soup.find_all('div', class_='show-details'):
     buy_ticket_link = buy_ticket.get('href')
 
     # insert data from Row House into database
-    c.execute('''INSERT INTO film_showings VALUES(?,?,?,?,?,?)''', (title, more_editted_showtime, editted_date, location, buy_ticket_link, summary))
-    conn.commit()
+    mycursor.execute("INSERT INTO FilmShowings (title, showtime, date, location, buy_ticket_link, summary) VALUES (%s,%s,%s,%s,%s,%s)", (title, more_editted_showtime, editted_date, location, buy_ticket_link, summary))
+    db.commit()
 
 for showing in soup2.find_all(class_="showtimes-details"):
     title = showing.find('h1', class_='name').text
@@ -53,9 +60,11 @@ for showing in soup2.find_all(class_="showtimes-details"):
     summary = showing.find(class_='synopsis').text
 
     # insert data from Hollywood Theater into database
-    c.execute('''INSERT INTO film_showings VALUES(?,?,?,?,?,?)''', (title, showtime, date, location, buy_ticket_link, summary))
-    conn.commit()
+    mycursor.execute("INSERT INTO FilmShowings (title, showtime, date, location, buy_ticket_link, summary) VALUES (%s,%s,%s,%s,%s,%s)", (title, showtime, date, location, buy_ticket_link, summary))
+    db.commit()
 
-# c.execute('''SELECT * FROM film_showings''')
-# results = c.fetchall()
-# print(results)
+# print data from table
+mycursor.execute("SELECT * FROM FilmShowings")
+
+for x in mycursor:
+    print(x)
