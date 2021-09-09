@@ -5,8 +5,7 @@ import mysql.connector
 
 # create connection to MySQL DB
 db = mysql.connector.connect(
-    host="localhost",
-    # credentials
+    host="45.79.203.86",
     user="",
     passwd="",
     database="filmscrapedb"
@@ -20,14 +19,15 @@ mycursor.execute("DROP TABLE FilmShowings")
 # create MySQL table
 mycursor.execute("CREATE TABLE FilmShowings (title VARCHAR(50), showtime VARCHAR(20), date VARCHAR(20), location VARCHAR(25), buy_ticket_link VARCHAR(100), summary VARCHAR(500))")
 
-# scrape data from Row House Cinema website
+# request data from Row House Cinema website
 source = requests.get('https://rowhousecinema.com/').text
 soup = BeautifulSoup(source, 'lxml')
 
-# scrap from Hollywood Theater website
+# request from Hollywood Theater website
 source2 = requests.get('https://www.hollywoodtheaterpgh.org/').text
 soup2 = BeautifulSoup(source2, 'lxml')
 
+# scrape data from Row House Cinema website
 for showing in soup.find_all('div', class_='show-details'):
     title = showing.h2.text
     info = showing.find('div', class_='show-description')
@@ -46,6 +46,7 @@ for showing in soup.find_all('div', class_='show-details'):
     mycursor.execute("INSERT INTO FilmShowings (title, showtime, date, location, buy_ticket_link, summary) VALUES (%s,%s,%s,%s,%s,%s)", (title, more_editted_showtime, editted_date, location, buy_ticket_link, summary))
     db.commit()
 
+# scrape from Hollywood Theater website
 for showing in soup2.find_all(class_="showtimes-details"):
     title = showing.find('h1', class_='name').text
     time = showing.find('span', class_="number").text
@@ -62,9 +63,3 @@ for showing in soup2.find_all(class_="showtimes-details"):
     # insert data from Hollywood Theater into database
     mycursor.execute("INSERT INTO FilmShowings (title, showtime, date, location, buy_ticket_link, summary) VALUES (%s,%s,%s,%s,%s,%s)", (title, showtime, date, location, buy_ticket_link, summary))
     db.commit()
-
-# print data from table
-mycursor.execute("SELECT * FROM FilmShowings")
-
-for x in mycursor:
-    print(x)
