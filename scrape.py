@@ -2,13 +2,14 @@ from bs4 import BeautifulSoup
 import requests
 import re
 import mysql.connector
+import datetime
 
 # create connection to MySQL DB
 db = mysql.connector.connect(
-    host="45.79.203.86",
-    user="",
-    passwd="",
-    database="filmscrapedb"
+    host=<host>,
+    user=<user>,
+    passwd=<password>,
+    database=<database>,
     )
 
 mycursor = db.cursor()
@@ -27,23 +28,24 @@ soup = BeautifulSoup(source, 'lxml')
 source2 = requests.get('https://www.hollywoodtheaterpgh.org/').text
 soup2 = BeautifulSoup(source2, 'lxml')
 
+# create datetime object for current day
+x = datetime.datetime.now()
+
 # scrape data from Row House Cinema website
 for showing in soup.find_all('div', class_='show-details'):
-    title = showing.h2.text
+    title = showing.h2.a.text
     info = showing.find('div', class_='show-description')
     summary = info.find('p', class_="").text
     showtime = showing.find(class_='showtime').text
     editted_showtime = re.sub('\n', '', showtime)
     more_editted_showtime = re.sub('\t', '', editted_showtime)
-    date = showing.find('div', class_='selected-date').text
-    date2 = re.sub('.*,  ', "", date)
-    editted_date = re.sub('\n', "", date2)
+    date = x.strftime("%B") + " " + x.strftime("%d")
     location = "Row House Cinema"
     buy_ticket = showing.find(class_='showtime')
     buy_ticket_link = buy_ticket.get('href')
 
     # insert data from Row House into database
-    mycursor.execute("INSERT INTO FilmShowings (title, showtime, date, location, buy_ticket_link, summary) VALUES (%s,%s,%s,%s,%s,%s)", (title, more_editted_showtime, editted_date, location, buy_ticket_link, summary))
+    mycursor.execute("INSERT INTO FilmShowings (title, showtime, date, location, buy_ticket_link, summary) VALUES (%s,%s,%s,%s,%s,%s)", (title, more_editted_showtime, date, location, buy_ticket_link, summary))
     db.commit()
 
 # scrape from Hollywood Theater website
