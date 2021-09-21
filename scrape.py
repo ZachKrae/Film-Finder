@@ -6,10 +6,10 @@ import datetime
 
 # create connection to MySQL DB
 db = mysql.connector.connect(
-    host=<host>,
-    user=<user>,
-    passwd=<password>,
-    database=<database>,
+    host="",
+    user="",
+    passwd="",
+    database=""
     )
 
 mycursor = db.cursor()
@@ -30,6 +30,7 @@ soup2 = BeautifulSoup(source2, 'lxml')
 
 # create datetime object for current day
 x = datetime.datetime.now()
+today = x.strftime("%Y" +"-" + "%m" + "-" + "%d")
 
 # scrape data from Row House Cinema website
 for showing in soup.find_all('div', class_='show-details'):
@@ -39,7 +40,8 @@ for showing in soup.find_all('div', class_='show-details'):
     showtime = showing.find(class_='showtime').text
     editted_showtime = re.sub('\n', '', showtime)
     more_editted_showtime = re.sub('\t', '', editted_showtime)
-    date = x.strftime("%B") + " " + x.strftime("%d")
+    date = showing.find('div', class_="selected-date").find('span').text
+    # date = x.strftime("%B") + " " + x.strftime("%d")
     location = "Row House Cinema"
     buy_ticket = showing.find(class_='showtime')
     buy_ticket_link = buy_ticket.get('href')
@@ -56,7 +58,10 @@ for showing in soup2.find_all(class_="showtimes-details"):
     showtime = time + " " + ampm
     raw_date = showing.find(class_='location_date')
     new_date = showing.parent.attrs['id']
-    date = re.sub('2021-09-', 'Sep ', new_date)
+    if new_date == today:
+        date = datetime.datetime.strptime(new_date, "%Y-%m-%d").strftime("Today" + ", " + "%b" + " " + "%d")
+    else:
+        date = datetime.datetime.strptime(new_date, "%Y-%m-%d").strftime("%A" + ", " + "%b" + " " + "%d")
     location = "Hollwood Theater"
     buy_ticket = showing.find(class_='showtime')
     buy_ticket_link = buy_ticket.get('href')
@@ -65,3 +70,5 @@ for showing in soup2.find_all(class_="showtimes-details"):
     # insert data from Hollywood Theater into database
     mycursor.execute("INSERT INTO FilmShowings (title, showtime, date, location, buy_ticket_link, summary) VALUES (%s,%s,%s,%s,%s,%s)", (title, showtime, date, location, buy_ticket_link, summary))
     db.commit()
+
+
