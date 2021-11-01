@@ -6,10 +6,10 @@ import datetime
 
 # create connection to MySQL DB
 db = mysql.connector.connect(
-    host="45.79.203.86",
-    user="root",
-    passwd="#uAS@pp753",
-    database="filmscrapedb"
+    host="",
+    user="",
+    passwd="",
+    database=""
     )
 
 mycursor = db.cursor()
@@ -35,13 +35,16 @@ today = x.strftime("%Y" +"-" + "%m" + "-" + "%d")
 # scrape data from Row House Cinema website
 for showing in soup.find_all('div', class_='show-details'):
     title = showing.h2.a.text
+    print(title)
     info = showing.find('div', class_='show-description')
     summary = info.find('p', class_="").text
     showtime = showing.find(class_='showtime').text
     editted_showtime = re.sub('\n', '', showtime)
     more_editted_showtime = re.sub('\t', '', editted_showtime)
-    date = showing.find('div', class_="selected-date").find('span').text
-    # date = x.strftime("%B") + " " + x.strftime("%d")
+    try:
+        date = showing.find('div', class_="selected-date").find('span').text
+    except:
+        date = x.strftime("%B") + " " + x.strftime("%d")
     location = "Row House Cinema"
     buy_ticket = showing.find(class_='showtime')
     buy_ticket_link = buy_ticket.get('href')
